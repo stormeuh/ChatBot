@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    protected static final String BASE_DIRECTORY = "C:";
+    protected static final String BASE_DIRECTORY = "/Users/elias/git/ChatBot/webroot/";
 
     private static int port = 10080;
 
@@ -20,6 +20,7 @@ public class Main {
                 Session s = new Session(acceptedSocket);
                 Thread sessionThread = new Thread(s);
                 sessionThread.run();
+                System.out.println("Here");
             }
         }
     }
