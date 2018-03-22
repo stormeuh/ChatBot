@@ -12,19 +12,17 @@ import static org.junit.Assert.*;
  */
 public class HeaderTest {
 
+    Header testHeader;
+
     @Before
     public void setUp() throws Exception{
-
+        testHeader = new Header("GET / HTTP/1.1", true);
     }
 
     @Test
     public void toStringTest() throws Exception {
-
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
+        testHeader.setStatusCode(200);
+        System.out.println(testHeader);
     }
 
 }

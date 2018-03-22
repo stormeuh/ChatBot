@@ -1,5 +1,6 @@
 package be.eliasstorme;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -23,6 +24,7 @@ public class Header {
     private int contentSize = 0;
     private LocalDateTime ifModifiedSince = LocalDateTime.MIN;
 
+    private File attachedFile;
 
     private int statusCode;
     private String alternateLocation = "";
@@ -48,6 +50,9 @@ public class Header {
             this.command = initial[0].toUpperCase();
             this.path = initial[1];
             setIfModifiedSince(parseField("If-Modified-Since", headerText));
+            if(this.command == "PUT"){
+
+            }
         } else {
             this.statusCode = Integer.parseInt(initial[1]);
         }
@@ -87,11 +92,12 @@ public class Header {
     public String toString(){
         String headerString = "";
         if(isRequest) {
+
+        } else {
             headerString += "HTTP/1.1 " + Integer.toString(this.statusCode) + STATUS_CODES.get(this.statusCode) + "\n";
             headerString += buildField("Content-Size", getContentSize());
             headerString += buildField("Content-Location", getAlternateLocation());
             headerString += buildField("Date", ZonedDateTime.now().format(HTTP_FORMATTER));
-        } else {
         }
         headerString += "\n";
         return headerString;
@@ -105,12 +111,12 @@ public class Header {
         return field;
     }
 
-    public String getPath() {
-        return path;
-    }
-
     public void setPath(String path){
         this.path = path;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public void setAlternateLocation(String alternateLocation) {
@@ -125,12 +131,16 @@ public class Header {
         this.statusCode = statusCode;
     }
 
+    public int getStatusCode(){
+        return this.statusCode;
+    }
+
     public void setIsRequest(boolean isRequest){
         this.isRequest = isRequest;
     }
 
     public void setIfModifiedSince(String dateTime){
-        if (dateTime == null) {
+        if (dateTime != null) {
             this.ifModifiedSince = LocalDateTime.parse(dateTime);
         }
     }
@@ -145,5 +155,13 @@ public class Header {
 
     public String getContentSize(){
         return Integer.toString(this.contentSize);
+    }
+
+    public void attachFile(File file){
+        this.attachedFile = file;
+    }
+
+    public File getAttachedFile(){
+        return this.attachedFile;
     }
 }

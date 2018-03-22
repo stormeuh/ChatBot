@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    protected static final String BASE_DIRECTORY = "/Users/elias/git/ChatBot/webroot/";
+    protected static final String BASE_DIRECTORY = "www/";
 
     private static int port = 10080;
 

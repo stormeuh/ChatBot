@@ -29,10 +29,15 @@ public class Session implements Runnable {
                 headerText += next + "\n";
             }
             System.out.println(headerText);
-            Header receivedHeader = new Header(headerText);
+            Header receivedHeader = new Header(headerText, true);
             switch(receivedHeader.getCommand()){
                 case("GET"):
                     executeGet(receivedHeader, this.socket.getOutputStream());
+                    //executeGet(receivedHeader, System.out);
+                case("HEAD"):
+                    executeHead(receivedHeader, new PrintWriter(this.socket.getOutputStream()));
+                case("PUT"):
+                    executePut(receivedHeader, socket.getInputStream(), socket.getOutputStream());
             }
             socket.close();
         } catch (IOException e) {
@@ -42,6 +47,19 @@ public class Session implements Runnable {
 
     public void executeGet(Header receivedHeader, OutputStream toClient) throws IOException{
         PrintWriter headerWriter = new PrintWriter(toClient);
+        receivedHeader = executeHead(receivedHeader, headerWriter);
+        toClient.flush();
+        if(receivedHeader.getStatusCode() == 200) {
+            Files.copy(receivedHeader.getAttachedFile().toPath(),toClient);
+            toClient.flush();
+        }
+    }
+
+    public void executePut(Header receivedHeader, InputStream fromClient,OutputStream toClient) throws IOException{
+
+    }
+
+    public Header executeHead(Header receivedHeader, PrintWriter headerWriter) throws IOException{
         if(receivedHeader.getPath().equals("/")){
             receivedHeader.setAlternateLocation("/index.html");
             receivedHeader.setPath("/index.html");
@@ -49,22 +67,20 @@ public class Session implements Runnable {
         File f = new File(Main.BASE_DIRECTORY + receivedHeader.getPath().substring(1));
         LocalDateTime lastModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(f.lastModified()), ZoneId.systemDefault());
         receivedHeader.setIsRequest(false);
-        //404 Not found
+            //404 Not found
         if(!f.exists() || !f.canRead()) {
             receivedHeader.setStatusCode(404);
-            printAndFlush(headerWriter,receivedHeader);
-        //304 Not modified
+            //304 Not modified
         } else if(receivedHeader.getIfModifiedSince().compareTo(lastModified) > 0){
             receivedHeader.setStatusCode(304);
-            printAndFlush(headerWriter,receivedHeader);
-        //200 Found
+            //200 Found
         } else {
             receivedHeader.setStatusCode(200);
             receivedHeader.setContentSize((int) f.length());
-            printAndFlush(headerWriter,receivedHeader);
-            Files.copy(f.toPath(),toClient);
-            toClient.flush();
+            receivedHeader.attachFile(f);
         }
+        printAndFlush(headerWriter,receivedHeader);
+        return receivedHeader;
     }
 
     public void printAndFlush(PrintWriter headerWriter, Header header){
